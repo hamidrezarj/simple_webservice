@@ -23,6 +23,7 @@ func main() {
 	e.GET("/hello", handler.Hello)
 	e.POST("/customers", handler.Customer{}.Create)
 	e.PUT("/customers/:id", handler.Customer{}.Update)
+	e.DELETE("/customers/:id", handler.Customer{}.Delete)
 
 	if err := e.Start("0.0.0.0:8080"); err != nil {
 		fmt.Println(err)

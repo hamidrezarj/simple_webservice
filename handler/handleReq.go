@@ -145,8 +145,6 @@ func (customer Customer) Update(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err)
 	}
 
-	fmt.Println(c.ParamNames(), c.ParamValues())
-
 	id := c.Param("id")
 	intID, err := strconv.Atoi(id)
 	if err != nil {
@@ -156,7 +154,6 @@ func (customer Customer) Update(c echo.Context) error {
 	}
 
 	if index, cus := findByID(uint64(intID)); index != -1 {
-		//do some shit
 
 		cus.Name = req.Name
 		cus.Tel = req.Tel
@@ -185,4 +182,29 @@ func (customer Customer) Update(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusBadRequest, res)
+}
+
+func (customer Customer) Delete(c echo.Context) error {
+
+	id := c.Param("id")
+	intID, err := strconv.Atoi(id)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusNotFound, errorResponse{
+			Message: "Please enter valid url.",
+		})
+	}
+
+	if index, _ := findByID(uint64(intID)); index != -1 {
+		customers[index] = nil
+
+		fmt.Println(customers)
+
+		return c.JSON(http.StatusOK, errorResponse{
+			Message: "success",
+		})
+	}
+	return c.JSON(http.StatusNotFound, errorResponse{
+		Message: "cID is not available. (Customer with this information doesn't exist)",
+	})
+
 }

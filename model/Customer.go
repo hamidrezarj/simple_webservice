@@ -17,5 +17,5 @@ type Customer struct {
 }
 
 func (c Customer) String() string {
-	return fmt.Sprintf("name:%s tel:%d id: %d date: %s", c.Name, c.Tel, c.ID, c.RegisterDate)
+	return fmt.Sprintf("name:%s tel:%d id: %d address:%s", c.Name, c.Tel, c.ID, c.Address)
 }
