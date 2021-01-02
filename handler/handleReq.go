@@ -33,12 +33,18 @@ type errorResponse struct {
 	Message string `json:"msg"`
 }
 
-func Hello(c echo.Context) error {
-	var jsonStr = "{\"name\" : \"Hamid\"}"
-
-	return c.String(http.StatusOK, jsonStr)
-
+type getResponse struct {
+	Size      int           `json:"size"`
+	Customers []interface{} `json:"customers"`
+	Message   string        `json:"msg"`
 }
+
+// func Hello(c echo.Context) error {
+// 	var jsonStr = "{\"name\" : \"Hamid\"}"
+
+// 	return c.String(http.StatusOK, jsonStr)
+
+// }
 
 var cnt uint64 = 0
 var customers []interface{}
@@ -116,7 +122,7 @@ func (customer Customer) Create(c echo.Context) error {
 		}
 
 		if cap(customers) == 0 {
-			customers = make([]interface{}, 10)
+			customers = make([]interface{}, 0, 5)
 		}
 
 		if int(cnt-1) == len(customers) {
@@ -184,6 +190,25 @@ func (customer Customer) Update(c echo.Context) error {
 	return c.JSON(http.StatusBadRequest, res)
 }
 
+func getCustomerArray() ([]interface{}, bool) {
+
+	var newArr []interface{}
+	newArr = make([]interface{}, 0, cap(customers))
+
+	// index := 0
+	notNull := false
+	for i := 0; i < len(customers); i++ {
+		if customers[i] != nil {
+			notNull = true
+			// newArr[index] = customers[i]
+			// index++
+			newArr = append(newArr, customers[i])
+		}
+	}
+
+	return newArr, notNull
+}
+
 func (customer Customer) Delete(c echo.Context) error {
 
 	id := c.Param("id")
@@ -207,4 +232,20 @@ func (customer Customer) Delete(c echo.Context) error {
 		Message: "cID is not available. (Customer with this information doesn't exist)",
 	})
 
+}
+
+func (customer Customer) Get(c echo.Context) error {
+
+	if newCustomers, ok := getCustomerArray(); ok {
+		fmt.Println(newCustomers)
+		return c.JSON(http.StatusOK, getResponse{
+			Size:      len(newCustomers),
+			Customers: newCustomers,
+			Message:   "success",
+		})
+	}
+
+	return c.JSON(http.StatusNotFound, errorResponse{
+		Message: "(error) No customers are available!",
+	})
 }

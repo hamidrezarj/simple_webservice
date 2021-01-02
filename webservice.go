@@ -20,7 +20,7 @@ func main() {
 
 	e := echo.New()
 
-	e.GET("/hello", handler.Hello)
+	e.GET("/customers", handler.Customer{}.Get)
 	e.POST("/customers", handler.Customer{}.Create)
 	e.PUT("/customers/:id", handler.Customer{}.Update)
 	e.DELETE("/customers/:id", handler.Customer{}.Delete)

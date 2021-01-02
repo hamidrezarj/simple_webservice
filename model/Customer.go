@@ -9,10 +9,10 @@ import (
 // }
 
 type Customer struct {
+	ID           uint64 `json:"cID"`
 	Name         string `json:"cName"`
 	Tel          uint64 `json:"cTel"`
 	Address      string `json:"cAddress"`
-	ID           uint64 `json:"cID"`
 	RegisterDate string `json:"cRegisterDate"`
 }
 
