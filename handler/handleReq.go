@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/hamidrezaRanjbarpour/simple_webservice/model"
@@ -37,6 +38,12 @@ type getResponse struct {
 	Size      int           `json:"size"`
 	Customers []interface{} `json:"customers"`
 	Message   string        `json:"msg"`
+}
+
+type report struct {
+	Total   int    `json:"totalCustomers"`
+	Period  int    `json:"period"`
+	Message string `json:"msg"`
 }
 
 // func Hello(c echo.Context) error {
@@ -209,6 +216,28 @@ func getCustomerArray() ([]interface{}, bool) {
 	return newArr, notNull
 }
 
+func getCustomersByName(name string) []interface{} {
+
+	var newArr []interface{}
+	newArr = make([]interface{}, 0, cap(customers))
+
+	// index := 0
+	// notNull := false
+	for i := 0; i < len(customers); i++ {
+		if customers[i] != nil {
+
+			c := customers[i].(model.Customer)
+			if strings.HasPrefix(c.Name, name) {
+				// notNull = true
+				newArr = append(newArr, customers[i])
+			}
+
+		}
+	}
+
+	return newArr
+}
+
 func (customer Customer) Delete(c echo.Context) error {
 
 	id := c.Param("id")
@@ -234,18 +263,78 @@ func (customer Customer) Delete(c echo.Context) error {
 
 }
 
+//Get ... handles GET method with or without query parameters. It's case-sensitive in case of query params provided.
 func (customer Customer) Get(c echo.Context) error {
 
-	if newCustomers, ok := getCustomerArray(); ok {
-		fmt.Println(newCustomers)
-		return c.JSON(http.StatusOK, getResponse{
-			Size:      len(newCustomers),
-			Customers: newCustomers,
-			Message:   "success",
+	q := c.QueryParam("cName")
+
+	// fmt.Println(q == "")
+	if q == "" {
+		if newCustomers, ok := getCustomerArray(); ok {
+			fmt.Println(newCustomers)
+			return c.JSON(http.StatusOK, getResponse{
+				Size:      len(newCustomers),
+				Customers: newCustomers,
+				Message:   "success",
+			})
+		}
+
+		return c.JSON(http.StatusNotFound, errorResponse{
+			Message: "(error) No customers are available!",
+		})
+	} else {
+
+		matchedCustomers := getCustomersByName(q)
+		if len(matchedCustomers) > 0 {
+			return c.JSON(http.StatusOK, getResponse{
+				Size:      len(matchedCustomers),
+				Customers: matchedCustomers,
+				Message:   "success",
+			})
+		}
+
+		return c.JSON(http.StatusNotFound, errorResponse{
+			Message: "No customers found with given (prefix) name.",
+		})
+	}
+}
+
+func countNumOfCustomers(month int) int {
+	cnt := 0
+	if valid_customers, ok := getCustomerArray(); ok {
+		for i := 0; i < len(valid_customers); i++ {
+
+			c := valid_customers[i].(model.Customer)
+			if intMonth, err := strconv.Atoi(strings.Split(c.RegisterDate, "-")[1]); err == nil && intMonth == month {
+				cnt++
+			}
+		}
+	}
+	return cnt
+}
+
+func (customer Customer) MakeReport(c echo.Context) error {
+
+	month := c.Param("month")
+	intMOnth, err := strconv.Atoi(month)
+	if err != nil || intMOnth < 0 || intMOnth > 11 {
+		return echo.NewHTTPError(http.StatusNotFound, errorResponse{
+			Message: "Please enter valid month.",
 		})
 	}
 
-	return c.JSON(http.StatusNotFound, errorResponse{
-		Message: "(error) No customers are available!",
+	if cnt := countNumOfCustomers(intMOnth); cnt > 0 {
+
+		r := report{
+			Total:   cnt,
+			Period:  1,
+			Message: "success",
+		}
+
+		return c.JSON(http.StatusOK, r)
+	}
+
+	return echo.NewHTTPError(http.StatusNotFound, errorResponse{
+		Message: "(error) No customers registered for this month!",
 	})
 }
