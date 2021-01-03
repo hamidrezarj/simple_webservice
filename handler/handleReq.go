@@ -99,6 +99,7 @@ func findByID(ID uint64) (int, model.Customer) {
 
 }
 
+// Create ... creates new customers based on http req body. It raises http forbidden (403) if customer with given info was created before.
 func (customer Customer) Create(c echo.Context) error {
 	var req request
 
@@ -147,7 +148,7 @@ func (customer Customer) Create(c echo.Context) error {
 		Message: "Customer already exists.",
 	}
 
-	return echo.NewHTTPError(http.StatusBadRequest, res)
+	return echo.NewHTTPError(http.StatusForbidden, res)
 
 }
 
@@ -301,10 +302,10 @@ func (customer Customer) Get(c echo.Context) error {
 
 func countNumOfCustomers(month int) int {
 	cnt := 0
-	if valid_customers, ok := getCustomerArray(); ok {
-		for i := 0; i < len(valid_customers); i++ {
+	if validCustomers, ok := getCustomerArray(); ok {
+		for i := 0; i < len(validCustomers); i++ {
 
-			c := valid_customers[i].(model.Customer)
+			c := validCustomers[i].(model.Customer)
 			if intMonth, err := strconv.Atoi(strings.Split(c.RegisterDate, "-")[1]); err == nil && intMonth == month {
 				cnt++
 			}
