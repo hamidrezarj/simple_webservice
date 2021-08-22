@@ -46,13 +46,6 @@ type report struct {
 	Message string `json:"msg"`
 }
 
-// func Hello(c echo.Context) error {
-// 	var jsonStr = "{\"name\" : \"Hamid\"}"
-
-// 	return c.String(http.StatusOK, jsonStr)
-
-// }
-
 var cnt uint64 = 0
 var customers []interface{}
 
@@ -264,7 +257,7 @@ func (customer Customer) Delete(c echo.Context) error {
 
 }
 
-//Get ... handles GET method with or without query parameters. It's case-sensitive in case of query params provided.
+// Get ... handles GET method with or without query parameters. It's case-sensitive in case of query params provided.
 func (customer Customer) Get(c echo.Context) error {
 
 	q := c.QueryParam("cName")
